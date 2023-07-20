@@ -1,0 +1,70 @@
+import cv2
+import numpy as np
+import time
+
+# 1. Read the input image
+img = cv2.imread('input_image.jpg')
+
+# 2. Convert the image into gray-scale
+gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# 3. Show the histogram of the image
+hist = cv2.calcHist([gray_img],[0],None,[256],[0,256])
+cv2.imshow('Gray Image', gray_img)
+cv2.imshow('Histogram', hist)
+
+# 4. Modify the brightness of the image using gamma correction with a random gamma value
+gamma = np.random.uniform(0.5, 2.0)
+
+# 4.1. Using look-up table
+start_time = time.time()
+look_up_table = np.power(np.arange(0, 256)/255.0, gamma)*255.0
+look_up_table = look_up_table.astype(np.uint8)
+gamma_corrected_img_lut = cv2.LUT(gray_img, look_up_table)
+print(f"Using look-up table method took {time.time() - start_time:.5f} seconds")
+
+# 4.2. By modifying each pixel individually (without look-up table)
+start_time = time.time()
+gamma_corrected_img = np.power(gray_img/255.0, gamma)
+gamma_corrected_img = np.uint8(gamma_corrected_img*255)
+print(f"Without look-up table method took {time.time() - start_time:.5f} seconds")
+
+# 5. Compare between the execution time of both methods
+cv2.imshow('Gamma Corrected Image (with look-up table)', gamma_corrected_img_lut)
+cv2.imshow('Gamma Corrected Image (without look-up table)', gamma_corrected_img)
+
+# 6. Show the histogram after processing (both methods should have the same histogram)
+hist_gamma_corrected = cv2.calcHist([gamma_corrected_img],[0],None,[256],[0,256])
+cv2.imshow('Histogram (Gamma Corrected Image)', hist_gamma_corrected)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+/////////////////////////////////////////
+
+# 4. Modify the brightness of the image using gamma correction with a random gamma value
+gamma = np.random.uniform(0.5, 2.0)
+
+# 4.1. Using look-up table
+start_time = time.time()
+look_up_table = np.power(np.arange(0, 256)/255.0, gamma)*255.0
+look_up_table = look_up_table.astype(np.uint8)
+gamma_corrected_img_lut = cv2.LUT(gray_img, look_up_table)
+print(f"Using look-up table method took {time.time() - start_time:.5f} seconds")
+
+# 4.2. By modifying each pixel individually (without look-up table)
+start_time = time.time()
+gamma_corrected_img = np.power(gray_img/255.0, gamma)
+gamma_corrected_img = np.uint8(gamma_corrected_img*255)
+print(f"Without look-up table method took {time.time() - start_time:.5f} seconds")
+
+# 5. Compare between the execution time of both methods
+cv2.imshow('Gamma Corrected Image (with look-up table)', gamma_corrected_img_lut)
+cv2.imshow('Gamma Corrected Image (without look-up table)', gamma_corrected_img)
+
+# 6. Show the histogram after processing (both methods should have the same histogram)
+hist_gamma_corrected = cv2.calcHist([gamma_corrected_img],[0],None,[256],[0,256])
+cv2.imshow('Histogram (Gamma Corrected Image)', hist_gamma_corrected)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()

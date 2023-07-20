@@ -1,0 +1,203 @@
+
+from cv2 import HOUGH_GRADIENT
+import numpy as np
+import cv2 
+import pandas as pd 
+import matplotlib.pyplot as plt
+x=y=z=0
+#read image
+img = cv2.imread('i3.jpg',cv2.IMREAD_GRAYSCALE)
+
+_, threshold = cv2.threshold(img, 240, 255, cv2.THRESH_BINARY)
+
+contours, hierarchy= cv2.findContours(threshold,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+font = cv2.FONT_HERSHEY_DUPLEX
+for cnt in contours:
+    approx =cv2.approxPolyDP(cnt,0.001*cv2.arcLength(cnt,True),True)
+    cv2.drawContours(img,[cnt],0,(0),2)
+    print(len(approx))
+    x=approx.ravel()[0]
+    y=approx.ravel()[-1]
+    
+    
+    if len(approx) ==106:
+        cv2.putText(img,"curve",(x,y),font,1,(0))
+    elif len(approx) ==32:
+        cv2.putText(img,"face",(x,y),font,1,(0))
+    elif len(approx) ==40:
+        cv2.putText(img,"nose",(x,y),font,1,(0))
+    elif len(approx) ==31:
+        cv2.putText(img,"eye ",(x,y),font,1,(0))
+    elif len(approx) ==74:
+        cv2.putText(img,"circle",(x,y),font,1,(0))
+    elif len(approx) ==94:
+        cv2.putText(img,"Triangle",(x,y),font,1,(0))
+    elif len(approx) ==39:
+        cv2.putText(img,"Rectangle",(x,y),font,1,(0))
+    elif len(approx) ==58:
+        cv2.putText(img,"line",(x,y),font,1,(0))
+    elif len(approx) ==119:
+        cv2.putText(img,"mouth",(x,y),font,1,(0))
+        
+        
+        
+        
+cv2.imshow('shapes', img) 
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+///////////////////////////////////
+///////////////////////////
+//////////////
+from cv2 import HOUGH_GRADIENT
+import numpy as np
+import cv2 
+import pandas as pd 
+import matplotlib.pyplot as plt
+
+#read image
+img = cv2.imread('inputImage.jpg')
+
+print('Image Dimensions :', img.shape)
+
+# converting image into grayscale image
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# perform edge detection
+edges = cv2.Canny(gray, 30, 100)
+# detect lines in the image using hough lines technique
+lines = cv2.HoughLinesP(edges, 1, np.pi/180, 60, np.array([]), 50, 5)
+
+# iterate over the output lines and draw them
+for line in lines:
+    for x1, y1, x2, y2 in line:
+        cv2.line(img, (x1, y1), (x2, y2), (20, 220, 20), 3)
+        
+#plt.imshow(img)
+#plt.show()
+#######circle detection
+
+_, threshold = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+contours, _ = cv2.findContours(
+    threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  
+i = 0
+  
+# list for storing names of shapes
+for contour in contours:
+  
+    # here we are ignoring first counter because 
+    # findcontour function detects whole image as shape
+    if i == 0:
+        i = 1
+        continue
+  
+    # cv2.approxPloyDP() function to approximate the shape
+    approx = cv2.approxPolyDP(
+        contour, 0.01 * cv2.arcLength(contour, True), True)
+      
+    # using drawContours() function
+    cv2.drawContours(img, [contour], 0, (100, 100, 100), 2)
+  
+    # finding center point of shape
+    M = cv2.moments(contour)
+    if M['m00'] != 0.0:
+        x = int(M['m10']/M['m00'])
+        y = int(M['m01']/M['m00'])
+    if len(approx) == 3:
+        cv2.putText(img, 'Triangle', (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+  
+    elif len(approx) == 4:
+        cv2.putText(img, 'Rectangle', (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+    elif len(approx) > 6:
+        cv2.putText(img, 'circle', (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+  
+# displaying the image after drawing contours
+cv2.imshow('shapes', img)
+  
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################
+##############################
+###############################
+############################+
+# setting threshold of gray image
+_, threshold = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+
+# using a findContours() function
+contours, _ = cv2.findContours(
+    threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  
+i = 0
+
+
+# list for storing names of shapes
+for contour in contours:
+  
+    # here we are ignoring first counter because 
+    # findcontour function detects whole image as shape
+    if i == 0:
+        i = 1
+        continue
+  
+    # cv2.approxPloyDP() function to approximate the shape
+    approx = cv2.approxPolyDP(
+        contour, 0.01 * cv2.arcLength(contour, True), True)
+      
+    # using drawContours() function
+    cv2.drawContours(img, [contour], 0, (100, 100, 100), 1)
+ # finding center point of shape
+    M = cv2.moments(contour)
+    if M['m00'] != 0.0:
+        x = int(M['m10']/M['m00'])
+        y = int(M['m01']/M['m00'])
+  
+ # putting shape name at center of each shape
+    if len(approx) ==1 :
+        cv2.putText(img, 'Line', (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+    if len(approx) == 3:
+        cv2.putText(img, 'Triangle', (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+  
+    elif len(approx) == 4:
+        cv2.putText(img, 'Rectangle', (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+    
+    elif len(approx) > 5:
+        cv2.putText(img, 'Circle', (x, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)          
+  
+          
+  
+# displaying the image after drawing contours
+cv2.imshow('shapes', img)
+  
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+
+
+

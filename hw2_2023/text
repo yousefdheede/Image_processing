@@ -1,0 +1,93 @@
+import cv2
+import numpy as np
+
+# capture video from camera
+cap = cv2.VideoCapture(0)
+
+# Define the lower and upper bounds for each color in HSV color space
+low_red = np.array([0, 100, 100])
+up_red = np.array([10, 255, 255])
+low_green = np.array([40, 100, 100])
+up_green = np.array([70, 255, 255])
+low_blue = np.array([100, 100, 100])
+up_blue = np.array([140, 255, 255])
+
+
+
+distance = None
+stored_img = None
+
+while True:
+    # Capture a frame from the camera
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # 
+    mask_red = cv2.inRange(hsv, low_red, up_red)
+    mask_green = cv2.inRange(hsv, low_green, up_green)
+    mask_blue = cv2.inRange(hsv, low_blue, up_blue)
+
+   
+    contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    contour_red = max(contours_red, key=cv2.contourArea, default=None)
+    contour_green = max(contours_green, key=cv2.contourArea, default=None)
+    contour_blue = max(contours_blue, key=cv2.contourArea, default=None)
+
+    # If we have a red contour, draw a red line on the video
+    if contour_red is not None:
+        x, y, w, h = cv2.boundingRect(contour_red)
+        cv2.line(frame, (x + w // 2, 0), (x + w // 2, frame.shape[0]), (0, 0, 255), thickness=2)
+
+    # If we have a green contour, calculate the distance between the two fingers
+    if contour_green is not None:
+        # Find the convex hull of the contour
+        hull = cv2.convexHull(contour_green)
+
+        # Find the two points farthest apart on the hull
+        dists = cv2.distanceTransform(cv2.bitwise_not(mask_green), cv2.DIST_L2, 5)
+        points = np.column_stack(np.where(dists == np.max(dists)))
+        if len(points) == 2:
+            distance = np.linalg.norm(points[0] - points[1])
+
+    # If we have a blue contour, capture and store the current video frame
+    if contour_blue is not None:
+        # Find the convex hull of the contour
+        hull = cv2.convexHull(contour_blue)
+
+        # Combine the two fingers on the hull to create a mask
+        mask = np.zeros(frame.shape[:2], dtype=np.uint8)
+        cv2.drawContours(mask, [hull], 0, 255, -1)
+
+        stored_img = cv2.bitwise_and(frame, frame, mask=mask)
+
+    # new window for output
+    if stored_img is not None:
+        cv2.imshow('Stored Image', stored_img)
+
+    # show store video
+    cv2.imshow('Video Stream', frame)
+
+    # Check for key presses
+    key = cv2.waitKey(1)
+    if key == ord('q'):
+        break
+
+    # zoom in out
+    if distance is not None:
+        # find zoom factor 
+        zoom_factor = max(min(1 / distance * 100, 3), 0.3)
+
+        # change frame depending on zoom fac
+        resized_frame = cv2.resize(frame, None, fx=zoom_factor, fy=zoom_factor, interpolation=cv2.INTER_LINEAR)
+
+        # display the resulting image
+        cv2.imshow('Zoomed Video', resized_frame)
+
+cap.release()
+cv2.destroyAllWindows()
